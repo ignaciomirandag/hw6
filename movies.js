@@ -1,15 +1,15 @@
-// First, sign up for an account at https://themoviedb.org
-// Once verified and signed-in, go to Settings and create a new
-// API key; in the form, indicate that you'll be using this API
+// First, sign up for an account at https://themoviedb.org / OK
+// Once verified and signed-in, go to Settings and create a new 
+// API key; in the form, indicate that you'll be using this API 
 // key for educational or personal use, and you should receive
-// your new key right away.
+// your new key right away. / OK
 
 // For this exercise, we'll be using the "now playing" API endpoint
-// https://api.themoviedb.org/3/movie/now_playing?api_key=${apiKey}&language=en-US
+// https://api.themoviedb.org/3/movie/now_playing?api_key=${apiKey}&language=en-US / OK
 
 // Note: image data returned by the API will only give you the filename;
 // prepend with `https://image.tmdb.org/t/p/w500/` to get the 
-// complete image URL
+// complete image URL / OK
 
 window.addEventListener('DOMContentLoaded', async function(event) {
   // Step 1: Construct a URL to get movies playing now from TMDB, fetch
@@ -17,10 +17,12 @@ window.addEventListener('DOMContentLoaded', async function(event) {
   // movies. Write the contents of this array to the JavaScript
   // console to ensure you've got good data
   // ⬇️ ⬇️ ⬇️
-
+  let apiKey = '040142f2f7f6e222031b168729251c6d' // <<<< fill in with your api key from step 1 (or the api key we provided) / OK
+  let response = await fetch(`https://api.themoviedb.org/3/movie/now_playing?api_key=${apiKey}&language=en-US`)
+  let json = await response.json()
+  console.log(json)
   // ⬆️ ⬆️ ⬆️ 
-  // End Step 1
-  
+  // End Step 1 / OK
   // Step 2: 
   // - Loop through the Array called movies and insert HTML
   //   into the existing DOM element with the class name .movies
@@ -34,8 +36,24 @@ window.addEventListener('DOMContentLoaded', async function(event) {
   // </div>
   // ⬇️ ⬇️ ⬇️
 
+let movies = json.results
+      console.log(movies)
+
+for (let i=0; i<movies.length; i++){
+  let movieImage = movies[i].poster_path
+  let movieTitle = movies[i].title
+
+  document.querySelector('.movies').insertAdjacentHTML('beforeend', `
+  <div class="w-1/5 p-4 movie-${movieTitle}">
+       <img src="https://image.tmdb.org/t/p/w500/${movieImage}" class="w-full">
+       <a href="#" class="watched-button block text-center text-white bg-green-500 mt-4 px-4 py-2 rounded">🍿 I've watched this!</a>
+  </div>
+  `)
+  console.log(movieTitle, movieImage) 
+}
+
   // ⬆️ ⬆️ ⬆️ 
-  // End Step 2
+  // End Step 2 / OK
 
   // Step 3: 
   // - Attach an event listener to each "watched button"
@@ -48,6 +66,48 @@ window.addEventListener('DOMContentLoaded', async function(event) {
   //   the movie is watched. Use .classList.remove('opacity-20')
   //   to remove the class if the element already contains it.
   // ⬇️ ⬇️ ⬇️
+
+let db = firebase.firestore()
+let querySnapshot = await db.collection('watched').get()
+let watchedMovies = querySnapshot.docs
+
+   console.log(querySnapshot.docs.length)
+   console.log(querySnapshot.size)
+   console.log(watchedMovies)
+
+for (let i=0; i<movies.length; i++){
+  document.querySelector('.movies').insertAdjacentHTML('beforeend', `
+  <div class="w-1/5 p-4 movie-${movieId}">
+       <img src="https://image.tmdb.org/t/p/w500/${movieImage}" class="w-full">
+       <a href="#" class="watched-button block text-center text-white bg-green-500 mt-4 px-4 py-2 rounded">🍿 I've watched this!</a>
+  </div>
+  `)
+
+let querySnapshot = await db.collection('watched').get()
+let watched = querySnapshot.docs
+for (let i=0; i<watched.length; i++) {
+  let movieId = movies[i].id
+  let watchedId = watched[i].id
+  if (watchedId == movieId) {
+    document.querySelector(`.movie-${movieId}`).classList.add('opacity-20')
+  }
+}
+
+document.querySelector(`.movie-${movieId} .done`).addEventListener('click',async function (event){
+  event.preventDefault()
+  if (document.querySelector(`.movie-${movieId}`).classList.contains('opacity-20') == true) {
+    document.querySelector(`.movie-${movieId}`).classList.remove('opacity-20')
+    await db.collection('watched').doc(`${movieId}`).delete()
+  }       
+  else {
+  document.querySelector(`.movie-${movieId}`).classList.add('opacity-20')
+  docRef=await db.collection(`watched`).doc(`${movieId}`).set({})
+  console.log(`${movieTitle} watched!`)
+  }
+})
+
+
+}
 
   // ⬆️ ⬆️ ⬆️ 
   // End Step 3
