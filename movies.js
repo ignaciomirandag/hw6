@@ -39,18 +39,23 @@ window.addEventListener('DOMContentLoaded', async function(event) {
 let movies = json.results
       console.log(movies)
 
+      let db = firebase.firestore()
+      let querySnapshot = await db.collection('movies').get()
+      
+      
+
 for (let i=0; i<movies.length; i++){
   let movieImage = movies[i].poster_path
-  let movieTitle = movies[i].title
+  let movieId = movies[i].id
 
   document.querySelector('.movies').insertAdjacentHTML('beforeend', `
-  <div class="w-1/5 p-4 movie-${movieTitle}">
+  <div class="w-1/5 p-4 movie-${movieId}">
        <img src="https://image.tmdb.org/t/p/w500/${movieImage}" class="w-full">
        <a href="#" class="watched-button block text-center text-white bg-green-500 mt-4 px-4 py-2 rounded">🍿 I've watched this!</a>
   </div>
   `)
-  console.log(movieTitle, movieImage) 
-}
+  console.log(movieId, movieImage) 
+
 
   // ⬆️ ⬆️ ⬆️ 
   // End Step 2 / OK
@@ -67,46 +72,28 @@ for (let i=0; i<movies.length; i++){
   //   to remove the class if the element already contains it.
   // ⬇️ ⬇️ ⬇️
 
-let db = firebase.firestore()
-let querySnapshot = await db.collection('watched').get()
-let watchedMovies = querySnapshot.docs
 
-   console.log(querySnapshot.docs.length)
-   console.log(querySnapshot.size)
-   console.log(watchedMovies)
-
-for (let i=0; i<movies.length; i++){
-  document.querySelector('.movies').insertAdjacentHTML('beforeend', `
-  <div class="w-1/5 p-4 movie-${movieId}">
-       <img src="https://image.tmdb.org/t/p/w500/${movieImage}" class="w-full">
-       <a href="#" class="watched-button block text-center text-white bg-green-500 mt-4 px-4 py-2 rounded">🍿 I've watched this!</a>
-  </div>
-  `)
-
-let querySnapshot = await db.collection('watched').get()
+let querySnapshot = await db.collection('movies').get()
 let watched = querySnapshot.docs
 for (let i=0; i<watched.length; i++) {
-  let movieId = movies[i].id
   let watchedId = watched[i].id
   if (watchedId == movieId) {
     document.querySelector(`.movie-${movieId}`).classList.add('opacity-20')
   }
 }
 
-document.querySelector(`.movie-${movieId} .done`).addEventListener('click',async function (event){
+document.querySelector(`.movie-${movieId} .watched-button`).addEventListener('click',async function (event){
   event.preventDefault()
   if (document.querySelector(`.movie-${movieId}`).classList.contains('opacity-20') == true) {
     document.querySelector(`.movie-${movieId}`).classList.remove('opacity-20')
-    await db.collection('watched').doc(`${movieId}`).delete()
+    await db.collection('movies').doc(`${movieId}`).delete()
   }       
   else {
   document.querySelector(`.movie-${movieId}`).classList.add('opacity-20')
-  docRef=await db.collection(`watched`).doc(`${movieId}`).set({})
-  console.log(`${movieTitle} watched!`)
+  docRef=await db.collection(`movies`).doc(`${movieId}`).set({})
+
   }
 })
-
-
 }
 
   // ⬆️ ⬆️ ⬆️ 
